@@ -1,0 +1,49 @@
+name: order-service
+services:
+  php:
+    build:
+      context: ../
+      dockerfile: docker/php/Dockerfile
+    volumes:
+      - ../:/var/www
+    depends_on:
+      - postgres
+    networks:
+      - order-service-network
+      - microservices-network
+
+  nginx:
+    build:
+      context: ../
+      dockerfile: docker/nginx/Dockerfile
+    ports:
+      - "8083:80"
+    volumes:
+      - ../:/var/www
+    depends_on:
+      - php
+    networks:
+      - order-service-network
+      - microservices-network
+
+  postgres:
+    image: postgres:17
+    environment:
+      POSTGRES_DB: laravel
+      POSTGRES_USER: laravel
+      POSTGRES_PASSWORD: secret
+    ports:
+      - "5435:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - order-service-network
+
+volumes:
+  postgres_data:
+
+networks:
+  order-service-network:
+    driver: bridge
+  microservices-network:
+    external: true
