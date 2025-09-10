@@ -28,6 +28,7 @@ use OpenApi\Attributes as OA;
 )]
 class StoreOrderRequest extends FormRequest
 {
+    protected $stopOnFirstFailure = true;
     public function rules(): array
     {
         return [

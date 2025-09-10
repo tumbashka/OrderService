@@ -11,6 +11,7 @@ use App\Enums\ProductType;
 use App\Interfaces\PaymentInterface;
 use App\Models\Order;
 use Exception;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Throwable;
 
@@ -21,6 +22,9 @@ class OrderService
      */
     public function createOrderAndGetPaymentURL(OrderData $orderDTO): string
     {
+        if ($this->isBusy($orderDTO)) {
+            abort(422, 'This date is busy');
+        }
         $order = $this->createOrder($orderDTO);
         $paymentService = $this->getPaymentService($orderDTO->payment_id);
 
@@ -80,17 +84,26 @@ class OrderService
         };
     }
 
-    public function getReservedDates(int $carId)
+    public function getReservedDates(int $carId, bool $toTimeString = false): Collection
     {
-        $orders = Order::query()->where('');
+        $orders = Order::query()->whereHas('products', function ($query) use ($carId) {
+            $query->where('product_type', ProductType::Car)
+                ->where('product_id', $carId);
+        })->get();
+
         $dates = collect();
 
         foreach ($orders as $order) {
             $reservedDates = $this->getOrderReservationDates($order);
+            if ($toTimeString) {
+                $reservedDates = $reservedDates->map(function ($reservedDate) {
+                    return $reservedDate->toDateString();
+                });
+            }
             $dates = $dates->merge($reservedDates);
         }
 
-        return $dates->sort()->values();
+        return $dates->sort()->unique()->values();
     }
 
     private function getOrderReservationDates(Order $order)
@@ -100,7 +113,7 @@ class OrderService
         $end = $order->rent_end->copy();
 
         while ($start->lte($end)) {
-            $dates->add($start->toDateString());
+            $dates->add($start->copy());
             $start = $start->addDay();
         }
 
@@ -113,5 +126,19 @@ class OrderService
         $payment = $paymentService->createPayment($orderDTO);
 
         return $payment->url;
+    }
+
+    private function isBusy(OrderData $orderDTO)
+    {
+        $start = $orderDTO->start_date;
+        $end = $orderDTO->end_date;
+        $reservedDates = $this->getReservedDates($orderDTO->car->id);
+        foreach ($reservedDates as $reservedDate) {
+            if ($start->lte($reservedDate) && $end->gte($reservedDate)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

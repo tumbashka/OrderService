@@ -11,10 +11,9 @@ class ExistedAdditionalServices implements ValidationRule
     public function validate(string $attribute, mixed $value, Closure $fail): void
     {
         $catalogService = app(CatalogService::class);
-        $additionalServices = $catalogService->getAdditionalServices();
-        $servicesIds = $additionalServices->pluck('id');
+        $additionalService = $catalogService->getAdditionalService((int)$value);
 
-        if (!$servicesIds->contains($value)) {
+        if (!$additionalService) {
             $fail("Additional service with id:{$value} not found.");
         }
     }

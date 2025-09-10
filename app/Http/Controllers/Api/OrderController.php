@@ -61,17 +61,22 @@ class OrderController extends Controller
         return response()->json(compact('paymentUrl'));
     }
 
-    public function reservedDates(Car $car, OrderService $orderService)
+    public function reservedDates(int $carId, OrderService $orderService, CatalogService $catalogService)
     {
+        $carExist = $catalogService->checkCar($carId);
+        if (!$carExist) {
+            abort(404, 'Car not found');
+        }
+
         return response()->json([
-            'data' => $orderService->getReservedDates($car),
+            'data' => $orderService->getReservedDates($carId, true),
         ]);
     }
 
     public function cancel(Order $order)
     {
         $order->update([
-            'status' => OrderStatus::Canceled->value,
+            'status' => OrderStatus::Canceled,
         ]);
 
         return response()->json([
