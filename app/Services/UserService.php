@@ -26,6 +26,14 @@ class UserService
             return null;
         }
 
-        return $userData;
+        return collect($userData['data']);
+    }
+
+    public function checkUser(int $userId): bool
+    {
+        $res = Http::get($this->userServiceURL . "/api/users/" . $userId . "/check");
+        $data = $res->collect();
+
+        return (bool)$data['result'];
     }
 }
