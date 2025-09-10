@@ -86,7 +86,9 @@ class OrderService
 
     public function getReservedDates(int $carId, bool $toTimeString = false): Collection
     {
-        $orders = Order::query()->whereHas('products', function ($query) use ($carId) {
+        $orders = Order::query()
+            ->where('status', '!=', OrderStatus::Canceled->value)
+            ->whereHas('products', function ($query) use ($carId) {
             $query->where('product_type', ProductType::Car)
                 ->where('product_id', $carId);
         })->get();
