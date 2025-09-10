@@ -4,7 +4,6 @@ namespace App\Models;
 
 use App\Enums\OrderStatus;
 use Illuminate\Database\Eloquent\Casts\Attribute;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -25,21 +24,9 @@ class Order extends Model
         'status' => OrderStatus::class,
     ];
 
-    public function cars(): MorphToMany
+    public function products(): HasMany
     {
-        return $this->morphedByMany(Car::class, 'product', 'order_product')
-            ->withPivot(['price', 'name']);
-    }
-
-    public function additionalServices(): MorphToMany
-    {
-        return $this->morphedByMany(AdditionalService::class, 'product', 'order_product')
-            ->withPivot(['price', 'name']);
-    }
-
-    public function user(): BelongsTo
-    {
-        return $this->belongsTo(User::class);
+        return $this->hasMany(Product::class);
     }
 
     public function payments(): HasMany
@@ -51,13 +38,8 @@ class Order extends Model
     {
         return new Attribute(
             get: function ($value, array $attributes) {
-                $carsPrice = $this->cars()
-                    ->sum('cars.price');
-
-                $addServicesPrice = $this->additionalServices()
-                    ->sum('additional_services.price');
-
-                return $carsPrice + $addServicesPrice;
+                return $this->products()
+                    ->sum('price');
             }
         );
     }

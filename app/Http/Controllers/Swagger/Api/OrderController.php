@@ -11,11 +11,6 @@ class OrderController extends Controller
         path: '/api/orders',
         description: 'Get orders',
         summary: 'Get orders',
-        security: [
-            [
-                'bearerAuth' => [],
-            ],
-        ],
         tags: ['Order'],
         responses: [
             new OA\Response(
@@ -37,11 +32,6 @@ class OrderController extends Controller
         path: '/api/orders/{order_id}',
         description: 'Show order with id {order_id}',
         summary: 'Show order',
-        security: [
-            [
-                'bearerAuth' => [],
-            ],
-        ],
         tags: ['Order'],
         parameters: [
             new OA\Parameter(
@@ -70,14 +60,9 @@ class OrderController extends Controller
     public function show() {}
 
     #[OA\Post(
-        path: '/api/orders/create/{car_id}',
-        description: 'Create order for car with id {car_id}',
+        path: '/api/orders',
+        description: 'Create order',
         summary: 'Create order',
-        security: [
-            [
-                'bearerAuth' => [],
-            ],
-        ],
         requestBody: new OA\RequestBody(
             required: true,
             content: new OA\MediaType(
@@ -86,16 +71,6 @@ class OrderController extends Controller
             )
         ),
         tags: ['Order'],
-        parameters: [
-            new OA\Parameter(
-                name: 'car_id',
-                description: 'Car ID',
-                in: 'path',
-                required: true,
-                schema: new OA\Schema(type: 'integer'),
-                example: 2
-            ),
-        ],
         responses: [
             new OA\Response(
                 response: 200, description: 'Payment url', content: new OA\JsonContent(
@@ -103,6 +78,14 @@ class OrderController extends Controller
                         new OA\Property(property: 'paymentUrl', type: 'string'),
                     ]
                 )
+            ),
+            new OA\Response(
+                response: 422, description: 'Error on order or payment create', content: new OA\JsonContent(
+                properties: [
+                    new OA\Property(property: 'result', type: 'bool', example: false),
+                    new OA\Property(property: 'message', type: 'string'),
+                ]
+            )
             ),
         ]
     )]
@@ -112,11 +95,6 @@ class OrderController extends Controller
         path: '/api/orders/reserved-dates/{car_id}',
         description: 'Get reserved dates for car with id {car_id}',
         summary: 'Get car reserved dates',
-        security: [
-            [
-                'bearerAuth' => [],
-            ],
-        ],
         tags: ['Order'],
         parameters: [
             new OA\Parameter(
@@ -148,11 +126,6 @@ class OrderController extends Controller
         path: '/api/orders/{order_id}/cancel',
         description: 'Cancel order with id {order_id}',
         summary: 'Cancel order',
-        security: [
-            [
-                'bearerAuth' => [],
-            ],
-        ],
         tags: ['Order'],
         parameters: [
             new OA\Parameter(
