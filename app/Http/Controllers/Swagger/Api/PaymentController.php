@@ -11,11 +11,6 @@ class PaymentController extends Controller
         path: '/api/payment-types',
         description: 'Get payment types',
         summary: 'Payment types',
-        security: [
-            [
-                'bearerAuth' => [],
-            ],
-        ],
         tags: ['Payment'],
         responses: [
             new OA\Response(
@@ -37,11 +32,6 @@ class PaymentController extends Controller
         path: '/api/orders/{order_id}/pay',
         description: 'Create payment to order with id {order_id}',
         summary: 'Create payment to order',
-        security: [
-            [
-                'bearerAuth' => [],
-            ],
-        ],
         tags: ['Payment'],
         parameters: [
             new OA\Parameter(
@@ -73,11 +63,6 @@ class PaymentController extends Controller
         path: '/api/orders/{order_id}/payment/refresh',
         description: 'Create new payment for order with id {order_id}',
         summary: 'Create new payment for order',
-        security: [
-            [
-                'bearerAuth' => [],
-            ],
-        ],
         requestBody: new OA\RequestBody(
             required: true,
             content: new OA\MediaType(
