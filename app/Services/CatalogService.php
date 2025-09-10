@@ -2,6 +2,8 @@
 
 namespace App\Services;
 
+use App\Data\AdditionalServiceData;
+use App\Data\CarData;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Http;
 
@@ -20,12 +22,12 @@ class CatalogService
     public function getCar(int $carId): ?Collection
     {
         $res = Http::get($this->catalogServiceURL . "/api/catalog/" . $carId);
-        $carData = $res->collect('data');
-
-        if (!$res->successful() && $carData->isEmpty()) {
+        if (!$res->successful()) {
             return null;
         }
-        $carData['price'] = (int)($carData['price'] * 100);
+
+        $carData = CarData::from($res->collect('data'));
+        $carData->price = (int)($carData->price * 100);
 
         return collect($carData);
     }
@@ -40,39 +42,31 @@ class CatalogService
 
     public function getAdditionalServices(?array $additionalServiceIds = null): ?Collection
     {
+        $url = $this->catalogServiceURL . "/api/additional-services";
         if (is_null($additionalServiceIds)) {
-            $res = Http::get($this->catalogServiceURL . "/api/additional-services");
-            $additionalServices = $res->collect('data');
+            $res = Http::get($url);
         } else {
-            $additionalServices = collect();
-
-            foreach ($additionalServiceIds as $additionalServiceId) {
-                $additionalService = $this->getAdditionalService($additionalServiceId);
-                $additionalServices->push($additionalService);
-            }
+            $res = Http::get($url, ['ids' => $additionalServiceIds]);
         }
+        $additionalServices = $res->collect('data');
 
         if ($additionalServices->isEmpty()) {
             return null;
         }
 
-        $additionalServices =  $additionalServices->map(function ($additionalService) {
+        return $additionalServices->map(function ($additionalService) {
            $additionalService['price'] = (int)($additionalService['price'] * 100);
-           return $additionalService;
+           return AdditionalServiceData::from($additionalService);
         });
-
-        return ($additionalServices);
     }
 
     public function getAdditionalService(int $additionalServiceId): ?Collection
     {
         $res = Http::get($this->catalogServiceURL . "/api/additional-services/" . $additionalServiceId);
-
-        $additionalServiceData = $res->collect('data');
-
-        if (!$res->successful() && $additionalServiceData->isEmpty()) {
+        if (!$res->successful()) {
             return null;
         }
+        $additionalServiceData = AdditionalServiceData::from($res->collect('data'));
 
         return collect($additionalServiceData);
     }
