@@ -19,7 +19,7 @@ class YookassaService implements PaymentInterface
     public function __construct(
         private $client = new Client
     ) {
-        $this->client->getApiClient()->setConfig(['url' => 'http://localhost:777']);
+        $this->client->getApiClient()->setConfig(['url' => config('microservices.YookassaServiceURL')]);
         $this->client->setAuth(config('yookassa.shopId'), config('yookassa.secretKey'));
     }
 

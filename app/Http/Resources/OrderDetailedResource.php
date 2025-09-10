@@ -39,11 +39,10 @@ class OrderDetailedResource extends JsonResource
     public function toArray(Request $request): array
     {
         /** @var Order $this */
-        $products = $this->cars->merge($this->additionalServices);
 
         return [
             'id' => $this->id,
-            'products' => ProductResource::collection($products),
+            'products' => ProductResource::collection($this->products),
             'start_date ' => $this->rent_start,
             'end_date ' => $this->rent_end,
             'status' => [

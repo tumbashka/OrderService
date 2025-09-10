@@ -3,16 +3,20 @@
 namespace App\Data;
 
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Collection;
+use Spatie\LaravelData\Attributes\DataCollectionOf;
 use Spatie\LaravelData\Data;
 
 class OrderData extends Data
 {
     public function __construct(
-        public ?int $car_id,
+        public ?UserData $user,
+        public ?CarData $car,
         public ?int $payment_id,
-        public ?array $services,
+        #[DataCollectionOf(AdditionalServiceData::class)]
+        public ?Collection $services,
         public ?Carbon $start_date,
         public ?Carbon $end_date,
-        public ?int $user_id,
-    ) {}
+    ) {
+    }
 }

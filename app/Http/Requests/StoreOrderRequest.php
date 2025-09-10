@@ -3,14 +3,17 @@
 namespace App\Http\Requests;
 
 use App\Enums\PaymentType;
-use App\Models\AdditionalService;
-use App\Services\CatalogService;
+use App\Rules\ExistedAdditionalServices;
+use App\Rules\ExistedCar;
+use App\Rules\ExistedUser;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 use OpenApi\Attributes as OA;
 
 #[OA\Schema(
     properties: [
+        new OA\Property(property: 'car_id', description: 'Car id', type: 'integer'),
+        new OA\Property(property: 'user_id', description: 'User id', type: 'integer'),
         new OA\Property(property: 'payment_id', description: 'Payment type id', type: 'integer'),
         new OA\Property(
             property: 'services',
@@ -25,27 +28,15 @@ use OpenApi\Attributes as OA;
 )]
 class StoreOrderRequest extends FormRequest
 {
-    /**
-     * Determine if the user is authorized to make this request.
-     */
-    public function authorize(): bool
+    protected $stopOnFirstFailure = true;
+    public function rules(): array
     {
-        return true;
-    }
-
-    /**
-     * Get the validation rules that apply to the request.
-     *
-     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
-     */
-    public function rules(CatalogService $catalogService): array
-    {
-        $additionals = $catalogService->getAdditionalServices();
-        dd($additionals->pluck('id'));
         return [
+            'car_id' => ['required', 'integer', new ExistedCar()],
+            'user_id' => ['required', 'integer', new ExistedUser()],
             'payment_id' => ['required', 'integer', Rule::enum(PaymentType::class)],
             'services' => ['required', 'array'],
-            'services.*' => ['required', 'integer', Rule::exists(AdditionalService::class, 'id')],
+            'services.*' => ['required', 'integer', new ExistedAdditionalServices()],
             'start_date' => ['required', 'date', Rule::date()->afterOrEqual(now())],
             'end_date' => ['required', 'date', 'after:start_date'],
         ];

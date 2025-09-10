@@ -1,6 +1,6 @@
 name: order-service
 services:
-  php:
+  order-php:
     build:
       context: ../
       dockerfile: docker/php/Dockerfile
@@ -11,6 +11,8 @@ services:
     networks:
       - order-service-network
       - microservices-network
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
 
   nginx:
     build:
@@ -21,10 +23,12 @@ services:
     volumes:
       - ../:/var/www
     depends_on:
-      - php
+      - order-php
     networks:
-      - order-service-network
-      - microservices-network
+      order-service-network:
+      microservices-network:
+        aliases:
+          - order-service
 
   postgres:
     image: postgres:17
